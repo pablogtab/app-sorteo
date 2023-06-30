@@ -1,13 +1,15 @@
 import React, { useContext, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList } from 'react-native';
 import { colors } from '../theme/ColorTheme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackNavigatorParams } from '../navigation/HomeStackNavigator';
+import { useSorteados } from '../hooks/useSorteados';
 
 type Props = NativeStackScreenProps<HomeStackNavigatorParams, 'HomeScreen'>
 
 export const HomeScreen = ({ route, navigation }: Props) => {
 
+   const { historial, limpiarHistorial } = useSorteados()
 
 
    return (
@@ -29,10 +31,26 @@ export const HomeScreen = ({ route, navigation }: Props) => {
             }}>
                <Text style={styles.textoBoton}>Tareas</Text>
             </TouchableOpacity>
-            <View style={styles.resumenView}>
-               <Text>Resumen</Text>
-            </View>
+            <TouchableOpacity style={styles.boton} onPress={() => {
+               navigation.navigate('EstadisticasScreen')
+            }}>
+               <Text style={styles.textoBoton}>Estadísticas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.boton} onPress={() => {
+               limpiarHistorial()
+            }}>
+               <Text style={styles.textoBoton}>Limpiar Historial</Text>
+            </TouchableOpacity>
+            {
+               historial.length > 0 &&
+               <View style={{ marginTop: 15, marginHorizontal: '5%' }}>
+                  <FlatList scrollEnabled={false} data={historial} renderItem={({ item }) => {
+                     return <Text style={{ fontSize: 16, marginBottom: 5 }}>{item.fecha} - {item.sorteados.map(u => u.usuario.nombre).join(' ')}</Text>
+                  }}></FlatList>
+               </View>
+            }
          </View>
+
       </SafeAreaView>
    )
 }

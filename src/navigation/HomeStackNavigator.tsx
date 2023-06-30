@@ -5,6 +5,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { UsuarioScreen } from '../screens/UsuarioScreen';
 import { TareaScreen } from '../screens/TareaScreen';
 import { SorteoScreen } from '../screens/SorteoScreen';
+import { EstadisticasScreen } from '../screens/EstadisticasScreen';
 
 
 export type HomeStackNavigatorParams = {
@@ -12,6 +13,7 @@ export type HomeStackNavigatorParams = {
     UsuarioScreen: undefined
     TareaScreen: undefined
     SorteoScreen: undefined
+    EstadisticasScreen: undefined
 }
 
 const Stack = createNativeStackNavigator<HomeStackNavigatorParams>();
@@ -24,6 +26,7 @@ export const HomeStackNavigator = () => {
             <Stack.Screen name="UsuarioScreen" component={UsuarioScreen} />
             <Stack.Screen name="TareaScreen" component={TareaScreen} />
             <Stack.Screen name="SorteoScreen" component={SorteoScreen} />
+            <Stack.Screen name="EstadisticasScreen" component={EstadisticasScreen} />
         </Stack.Navigator>
     );
 }

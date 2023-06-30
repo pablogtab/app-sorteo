@@ -7,14 +7,13 @@ import { useUsuarios } from '../hooks/useUsuarios';
 import { useTareas } from '../hooks/useTareas';
 import { Usuario } from '../interfaces/Usuario';
 import { Tarea } from '../interfaces/Tarea';
+import { Sorteo } from '../interfaces/Sorteo';
+import { useSorteados } from '../hooks/useSorteados';
 
 
 type Selectable<T> = T & { selected: boolean }
 
-type Sorteo = {
-    tarea: Tarea
-    usuario: Usuario
-}
+
 
 type Props = NativeStackScreenProps<HomeStackNavigatorParams, 'SorteoScreen'>
 
@@ -22,6 +21,7 @@ export const SorteoScreen = ({ route, navigation }: Props) => {
 
     const { usuarios } = useUsuarios()
     const { tareas } = useTareas()
+    const { guardarSorteados, setSorteados, sorteados, historial, guardarHistorial } = useSorteados()
 
     const [usuariosSeleccionados, setUsuariosSeleccionados] = useState<Selectable<Usuario>[]>([])
     const [tareasSeleccionadas, setTareasSeleccionadas] = useState<Selectable<Tarea>[]>([])
@@ -31,7 +31,24 @@ export const SorteoScreen = ({ route, navigation }: Props) => {
     useEffect(() => {
         if (usuarios) setUsuariosSeleccionados(usuarios.map(u => { return { ...u, selected: true } }))
         if (tareas) setTareasSeleccionadas(tareas.map(t => { return { ...t, selected: true } }))
-    }, [usuarios, tareas])
+
+    }, [usuarios, tareas, sorteados])
+
+    useEffect(() => {
+        if (sorteados) {
+            let tmpUsuarios = usuariosSeleccionados.map(u => { return { ...u, selected: true } })
+
+            sorteados.forEach(s => {
+                let index = tmpUsuarios.findIndex(u => u.idUsuario === s.usuario.idUsuario)
+                if (index > -1) {
+                    tmpUsuarios[index].selected = false
+
+                }
+            })
+            
+            setUsuariosSeleccionados([...tmpUsuarios])
+        }
+    }, [sorteados])
 
     const RenderTarea = ({ data }: { data: Selectable<Tarea> }) => {
         return <View style={styles.renderView}>
@@ -84,16 +101,29 @@ export const SorteoScreen = ({ route, navigation }: Props) => {
         let tmp: Sorteo[] = []
         let tareas = tareasSeleccionadas.filter(t => t.selected)
         let usuarios = usuariosSeleccionados.filter(u => u.selected)
+        if (tareas.length > usuarios.length) return
         tareas.forEach((tarea) => {
             var indiceAleatorio = Math.floor(Math.random() * usuarios.length);
             let user = usuarios[indiceAleatorio];
             usuarios.splice(indiceAleatorio, 1)
             tmp.push({
                 tarea: tarea,
-                usuario: user
+                usuario: user,
             })
         })
-        console.log(tmp.map((data) => { return data.usuario.nombre + ' ' + data.tarea.descripcion }))
+
+        setSorteados([...tmp])
+        guardarSorteados(tmp)
+        guardarHistorial(tmp)
+
+
+
+    }
+
+    const RenderSorteo = ({ data }: { data: Sorteo }) => {
+        return <>
+            <Text style={{ fontSize: 18, marginTop: 5 }}>Lo siento {data.usuario.nombre} te tocó {data.tarea.descripcion}</Text>
+        </>
     }
 
     return (
@@ -106,6 +136,13 @@ export const SorteoScreen = ({ route, navigation }: Props) => {
             <TouchableOpacity style={styles.botonSortear} onPress={iniciarSorteo}>
                 <Text style={{ ...styles.titulo, color: colors.textColorPrimary }}>Sortear!</Text>
             </TouchableOpacity>
+
+            {sorteados.length > 0 &&
+                <View style={{ marginTop: 30 }}>
+                    {historial.length > 0 && <Text>{historial[0].fecha}</Text>}
+                    <FlatList data={sorteados} renderItem={({ item }) => <RenderSorteo data={item} />} />
+                </View>
+            }
         </SafeAreaView>
     )
 }
